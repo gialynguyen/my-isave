@@ -1,0 +1,26 @@
+# https://moonrepo.dev/docs/config/toolchain
+$schema: 'https://moonrepo.dev/schemas/toolchain.json'
+
+# Extend and inherit an external configuration file. Must be a valid HTTPS URL or file system path.
+# extends: './shared/toolchain.yml'
+
+# Configures Bun within the toolchain.
+bun:
+  # The version to use. Must be a semantic version that includes major, minor, and patch.
+  version: '1.1.3'
+
+  # Version format to use when syncing dependencies within the project's `package.json`.
+  # dependencyVersionFormat: 'workspace'
+
+  # Support the "one version policy" by only declaring dependencies in the root `package.json`.
+  # rootPackageOnly: true
+
+  # Sync a project's dependencies as `dependencies` within the project's `package.json`.
+  syncProjectWorkspaceDependencies: true
+
+node:
+  version: '20.12.2'
+  packageManager: 'pnpm'
+  pnpm:
+    version: '8.15.6'
+    
