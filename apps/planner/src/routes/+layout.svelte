@@ -1,4 +1,5 @@
-<script>
+<script lang="ts">
+  import './fonts.css';
   import { ModeWatcher } from 'mode-watcher';
   import Layout from '$lib/layouts/layout.svelte';
 

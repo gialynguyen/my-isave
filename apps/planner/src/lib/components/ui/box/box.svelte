@@ -12,9 +12,18 @@
 
 <div
   class={twMerge(
-    'h-full w-full rounded-3xl border border-transparent bg-primary-foreground px-4 py-6',
+    'h-full w-full rounded-3xl border border-transparent bg-primary-foreground px-5 py-4',
     className
   )}
 >
-  <slot />
+  {#if $$slots.title}
+    <div>
+      <slot name="title" />
+    </div>
+  {/if}
+  {#if $$slots.body}
+    <div class="mt-3">
+      <slot name="body" />
+    </div>
+  {/if}
 </div>
