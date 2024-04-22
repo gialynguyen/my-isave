@@ -1,0 +1,11 @@
+$schema: "https://moonrepo.dev/schemas/project.json"
+id: "auth-service"
+language: "typescript"
+platform: "bun"
+stack: "backend"
+type: "application"
+tags:
+  - "bun"
+tasks:
+  dev:
+    command: bun --watch run index.ts

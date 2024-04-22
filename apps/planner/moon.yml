@@ -1,0 +1,8 @@
+$schema: 'https://moonrepo.dev/schemas/project.json'
+id: 'web-planner'
+language: 'typescript'
+stack: 'frontend'
+type: 'application'
+tags:
+  - 'vite'
+  - 'svelte'

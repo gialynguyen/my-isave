@@ -1,0 +1,12 @@
+tasks:
+  build:
+    outputs:
+      - ".svelte-kit/"
+  test-integration:
+    command: "playwright test"
+  test-unit:
+    command: "vitest run"
+  test:
+    deps:
+      - "test-integration"
+      - "test-unit"
