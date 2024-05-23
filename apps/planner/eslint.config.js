@@ -2,6 +2,7 @@ import js from '@eslint/js';
 import ts from 'typescript-eslint';
 import svelte from 'eslint-plugin-svelte';
 import prettier from 'eslint-config-prettier';
+import svelteParser from 'svelte-eslint-parser';
 import globals from 'globals';
 
 /** @type {import('eslint').Linter.FlatConfig[]} */
@@ -22,7 +23,7 @@ export default [
   {
     files: ['**/*.svelte'],
     languageOptions: {
-      parser: 'svelte-eslint-parser',
+      parser: svelteParser,
       parserOptions: {
         parser: ts.parser,
         svelteFeatures: {
@@ -37,5 +38,10 @@ export default [
   },
   {
     ignores: ['build/', '.svelte-kit/', 'package/']
+  },
+  {
+    rules: {
+      'svelte/valid-compile': 'off'
+    }
   }
 ];

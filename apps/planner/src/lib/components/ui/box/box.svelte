@@ -1,13 +1,17 @@
 <script lang="ts" context="module">
+  import type { Snippet } from 'svelte';
+
   export type Props = {
     className?: string;
+    title?: Snippet;
+    body?: Snippet;
   };
 </script>
 
 <script lang="ts">
   import { twMerge } from 'tailwind-merge';
 
-  let { className }: Props = $props();
+  let { className, title, body }: Props = $props();
 </script>
 
 <div
@@ -16,14 +20,14 @@
     className
   )}
 >
-  {#if $$slots.title}
+  {#if title}
     <div>
-      <slot name="title" />
+      {@render title()}
     </div>
   {/if}
-  {#if $$slots.body}
+  {#if body}
     <div class="mt-3">
-      <slot name="body" />
+      {@render body()}
     </div>
   {/if}
 </div>
