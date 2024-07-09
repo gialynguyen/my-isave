@@ -38,10 +38,5 @@ export default [
   },
   {
     ignores: ['build/', '.svelte-kit/', 'package/']
-  },
-  {
-    rules: {
-      'svelte/valid-compile': 'off'
-    }
   }
 ];

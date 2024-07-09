@@ -1,1 +1,5 @@
 moon = "latest"
+
+[settings]
+auto-install = true
+auto-clean = true

@@ -7,21 +7,16 @@
 
 <script lang="ts">
   import * as Dialog from '$lib/components/ui/dialog';
-  import { Label } from '$lib/components/ui/label';
   import { Input } from '$lib/components/ui/input';
   import { Button } from '$lib/components/ui/button';
   import { Calendar } from '$lib/components/ui/calendar';
   import * as Popover from '$lib/components/ui/popover';
-  import { cn } from '$lib/utils';
-  import { DateFormatter, getLocalTimeZone, now, type DateValue } from '@internationalized/date';
-  import { CalendarIcon } from 'lucide-svelte';
+  import { getLocalTimeZone, now } from '@internationalized/date';
+  import { Textarea } from '$lib/components/ui/textarea';
 
   let { open, onClose }: Props = $props();
-  let startTime = $state<DateValue>(now(getLocalTimeZone()));
-  let endTime = $state<DateValue>(now(getLocalTimeZone()));
-
-  const df = new DateFormatter('en-US', {
-    dateStyle: 'long'
+  let taskState = $state({
+    dueDate: now(getLocalTimeZone())
   });
 
   function onOpenChange(open: boolean) {
@@ -32,44 +27,53 @@
 </script>
 
 <Dialog.Root {open} {onOpenChange}>
-  <Dialog.Content class="sm:max-w-[425px]">
+  <Dialog.Content class="sm:max-w-[760px]">
     <Dialog.Header>
       <Dialog.Title>Create a new task</Dialog.Title>
     </Dialog.Header>
-    <div class="grid gap-4 py-4">
+    <div class="grid gap-4 py-2">
       <div class="grid grid-cols-4 items-center gap-4">
-        <Label for="title" class="text-right">Title</Label>
-        <Input id="title" class="col-span-3" />
+        <Input
+          id="title"
+          class="col-span-4 border-none text-base font-medium"
+          placeholder="Task title"
+        />
       </div>
       <div class="grid grid-cols-4 items-center gap-4">
-        <Label for="description" class="text-right">Description</Label>
-        <Input id="description" class="col-span-3" />
+        <Textarea
+          id="description"
+          class="col-span-4 resize-none border-none"
+          placeholder="Add description..."
+        />
       </div>
 
       <div class="grid grid-cols-4 items-center gap-4">
-        <Label for="startTime" class="text-right">Start Date</Label>
         <Popover.Root>
           <Popover.Trigger asChild let:builder>
             <Button
-              variant="outline"
-              class={cn(
-                'w-[280px] justify-start text-left font-normal',
-                !startTime && 'text-muted-foreground'
-              )}
+              variant="secondary"
+              class="h-8 w-fit px-4 py-0 text-[12px] font-light"
               builders={[builder]}
             >
-              <CalendarIcon class="mr-2 h-4 w-4" />
-              {startTime ? df.format(startTime.toDate(getLocalTimeZone())) : 'Pick a date'}
+              Set due date...
+              <!-- <CalendarIcon class="mr-2 h-4 w-4" /> -->
+              <!-- {taskState.dueDate ? df.format(taskState.dueDate.toDate()) : 'Pick a date'} -->
             </Button>
           </Popover.Trigger>
-          <Popover.Content class="w-auto p-0">
-            <Calendar bind:value={startTime} initialFocus />
+          <Popover.Content class="mt-4 w-auto p-0">
+            <Calendar
+              bind:value={taskState.dueDate}
+              initialFocus
+              isDateDisabled={(date) => {
+                return date.compare(now(getLocalTimeZone())) < 0;
+              }}
+            />
           </Popover.Content>
         </Popover.Root>
       </div>
     </div>
     <Dialog.Footer>
-      <Button type="submit">Create</Button>
+      <Button class="h-8 px-8 py-0" type="submit">Create</Button>
     </Dialog.Footer>
   </Dialog.Content>
 </Dialog.Root>
