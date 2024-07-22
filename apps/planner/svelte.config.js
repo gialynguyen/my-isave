@@ -14,7 +14,12 @@ const config = {
     adapter: adapter(),
     alias: {
       features: './src/features',
-      'features/*': './src/features/*'
+      'features/*': './src/features/*',
+      server: './src/server',
+      'server/*': './src/server/*'
+    },
+    env: {
+      dir: process.cwd()
     }
   }
 };
