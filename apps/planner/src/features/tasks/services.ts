@@ -1,6 +1,7 @@
-import type { FilterObject } from '@mikro-orm/core';
+import { wrap, type FilterObject } from '@mikro-orm/core';
 import { getPostgresEm } from 'server/providers/postgres';
 import type { CreateTaskPayload } from './dtos/create-task';
+import type { UpdateTaskDto } from './dtos/update-task';
 import { TaskEntity } from './entity';
 import { taskPostgresRepo } from './repository';
 
@@ -26,19 +27,38 @@ export async function queryTasks<Filters extends FilterObject<TaskEntity>>(
   pagination: {
     page?: number;
     limit?: number;
-    cursor?: string;
+    after?: string;
+    first?: number;
+    before?: string;
+    last?: number;
   }
 ) {
-  const { page = 1, limit = 10 } = pagination;
+  const { page, limit, after, first, before, last } = pagination;
 
   const tasks = await taskPostgresRepo.find(params, {
     limit,
-    offset: (page - 1) * limit,
+    offset: page && limit ? (page - 1) * limit : undefined,
+    after: after ? { id: after } : undefined,
+    first,
+    before: before ? { id: before } : undefined,
+    last,
     orderBy: {
-      dueDate: 'ASC',
-      createdAt: 'ASC'
+      dueDate: 'DESC',
+      updatedAt: 'DESC'
     }
   });
 
   return tasks;
+}
+
+export async function updateTask(id: string, payload: UpdateTaskDto) {
+  const task = await taskPostgresRepo.findOneOrFail({ id });
+  wrap(task).assign(payload);
+
+  if (task.isCompleted && !task.completedAt) {
+    task.completedAt = new Date();
+  }
+
+  await getPostgresEm().flush();
+  return task;
 }

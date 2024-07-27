@@ -11,7 +11,7 @@
 
 <div class="flex h-full w-full">
   <div class="flex w-2/3 flex-col">
-    <div class="mb-4 flex max-h-[500px] min-h-60">
+    <div class="mb-4 flex h-1/2 min-h-60">
       <TaskSection />
       <Box className="m-2 w-1/2">
         {#snippet title()}
@@ -19,15 +19,15 @@
         {/snippet}
       </Box>
     </div>
-    <div class="mb-6 flex max-h-[800px] min-h-96">
+    <div class="mb-6 flex h-1/2 min-h-96">
       <Box className="m-2 w-1/2">
         {#snippet title()}
-          {@render boxTitle('Tracking habits', 3)}
+          {@render boxTitle("Today's Reminder", 3)}
         {/snippet}
       </Box>
       <Box className="m-2 w-1/2">
         {#snippet title()}
-          {@render boxTitle('Quick notes', 3)}
+          {@render boxTitle('Tracking habits', 3)}
         {/snippet}
       </Box>
     </div>

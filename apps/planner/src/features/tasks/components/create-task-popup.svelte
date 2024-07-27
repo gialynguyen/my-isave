@@ -18,14 +18,22 @@
   import { typebox } from 'sveltekit-superforms/adapters';
   import { type CreateTaskPayload, createTaskPayloadDto } from '../dtos/create-task';
   import { getClient } from '$lib/rpc/planner';
-  import { createMutation } from '@tanstack/svelte-query';
+  import { createMutation, useQueryClient } from '@tanstack/svelte-query';
+  import { TaskQueryKeys } from '../constants';
 
   let { open, onClose }: Props = $props();
+
+  const queryClient = useQueryClient();
 
   const createTask = createMutation({
     mutationFn: (payload: CreateTaskPayload) => {
       return getClient(fetch).tasks.$post({
         json: payload
+      });
+    },
+    onSuccess() {
+      queryClient.invalidateQueries({
+        queryKey: TaskQueryKeys
       });
     }
   });

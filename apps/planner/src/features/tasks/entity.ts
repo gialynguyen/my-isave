@@ -20,5 +20,10 @@ export class TaskEntity extends BaseEntity {
   dueDate?: Date;
 
   @Property()
-  isComplete: boolean = false;
+  isCompleted: boolean = false;
+
+  @Property({
+    nullable: true
+  })
+  completedAt?: Date;
 }

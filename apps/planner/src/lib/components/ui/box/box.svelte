@@ -16,18 +16,14 @@
 
 <div
   class={twMerge(
-    'h-full w-full rounded-3xl border border-transparent bg-primary-foreground px-5 py-4',
+    'h-full w-full rounded-2xl border border-transparent bg-primary-foreground px-5 py-4',
     className
   )}
 >
   {#if title}
-    <div>
-      {@render title()}
-    </div>
+    {@render title()}
   {/if}
   {#if body}
-    <div class="mt-3">
-      {@render body()}
-    </div>
+    {@render body()}
   {/if}
 </div>

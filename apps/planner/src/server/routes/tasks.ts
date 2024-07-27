@@ -2,14 +2,35 @@ import { tbValidator } from '$lib/typebox/hono';
 import { today } from '@internationalized/date';
 import { createTaskPayloadDto } from 'features/tasks/dtos/create-task';
 import { queryTasksConditionsDto } from 'features/tasks/dtos/query-tasks';
-import { createTask, queryTasks } from 'features/tasks/services';
+import { updateTaskDto } from 'features/tasks/dtos/update-task';
+import { createTask, queryTasks, updateTask } from 'features/tasks/services';
 import { Hono } from 'hono';
 
 const taskRoutes = new Hono()
   .get('/', tbValidator('query', queryTasksConditionsDto), async (c) => {
-    const { dueDate, timezone, page, limit } = c.req.valid('query');
-    console.log(page, limit);
+    const { dueDate, timezone, page, limit, before, last, after, first } = c.req.valid('query');
+
     const query: Parameters<typeof queryTasks>[0] = {};
+    const pagination: Parameters<typeof queryTasks>[1] = {
+      page: page ? Number(page) : undefined,
+      limit: limit ? Number(limit) : undefined,
+      before,
+      last: last ? Number(last) : undefined,
+      after,
+      first: first ? Number(first) : undefined
+    };
+
+    if (!limit && !last && !first) {
+      switch (dueDate) {
+        case 'today': {
+          break;
+        }
+        default: {
+          pagination.page = 1;
+          pagination.limit = 20;
+        }
+      }
+    }
 
     if (typeof dueDate === 'string') {
       switch (dueDate) {
@@ -29,16 +50,20 @@ const taskRoutes = new Hono()
       }
     }
 
-    const tasks = await queryTasks(query, {
-      page: 1,
-      limit: 10
-    });
+    const tasks = await queryTasks(query, pagination);
     return c.json(tasks);
   })
   .post('/', tbValidator('json', createTaskPayloadDto), async (c) => {
     const payload = c.req.valid('json');
 
     const task = await createTask(payload);
+
+    return c.json(task);
+  })
+  .put('/:id', tbValidator('json', updateTaskDto), async (c) => {
+    const { id } = c.req.param();
+    const payload = c.req.valid('json');
+    const task = await updateTask(id, payload);
 
     return c.json(task);
   });
