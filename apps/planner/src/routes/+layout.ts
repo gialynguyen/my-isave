@@ -1,3 +1,3 @@
-import { dev } from '$app/environment';
+// import { dev } from '$app/environment';
 // Disable SSR when running the dev server
-export const ssr = !dev;
+// export const ssr = !dev;

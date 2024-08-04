@@ -1,9 +1,9 @@
 import { tbValidator } from '$lib/typebox/hono';
 import { today } from '@internationalized/date';
-import { createTaskPayloadDto } from 'features/tasks/dtos/create-task';
-import { queryTasksConditionsDto } from 'features/tasks/dtos/query-tasks';
-import { updateTaskDto } from 'features/tasks/dtos/update-task';
-import { createTask, queryTasks, updateTask } from 'features/tasks/services';
+import { createTaskPayloadDto } from 'features/task/dtos/create-task';
+import { queryTasksConditionsDto } from 'features/task/dtos/query-tasks';
+import { updateTaskDto } from 'features/task/dtos/update-task';
+import { createTask, queryTasks, updateTask } from 'features/task/services';
 import { Hono } from 'hono';
 
 const taskRoutes = new Hono()

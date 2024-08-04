@@ -7,11 +7,13 @@
 
   import '../app.pcss';
   import { page } from '$app/stores';
+  import { MultiCreateButton } from '$lib/components/multi-create-button';
 
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: {
-        enabled: browser
+        enabled: browser,
+        refetchOnWindowFocus: false
       }
     }
   });
@@ -26,6 +28,9 @@
     <Layout>
       <slot />
     </Layout>
+    <div class="fixed bottom-16 right-16">
+      <MultiCreateButton />
+    </div>
   </QueryClientProvider>
 {/if}
 

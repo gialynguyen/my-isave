@@ -2,7 +2,7 @@ import { POSTGRES_PASSWORD, POSTGRES_URL, POSTGRES_USER } from '$env/static/priv
 import { EntityGenerator } from '@mikro-orm/entity-generator';
 import { Migrator } from '@mikro-orm/migrations';
 import { MikroORM } from '@mikro-orm/postgresql';
-import { TaskEntity } from 'features/tasks/entity';
+import { TaskEntity } from 'features/task/entity';
 
 let orm: Awaited<ReturnType<typeof createPostgresORM>>;
 

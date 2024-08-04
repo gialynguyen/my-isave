@@ -6,6 +6,7 @@ import { getPostgresORM } from './providers/postgres';
 import taskRoutes from './routes/tasks';
 
 const app = new Hono().basePath('/api');
+
 app.use(
   createMiddleware(async (_, next) => {
     const orm = getPostgresORM();

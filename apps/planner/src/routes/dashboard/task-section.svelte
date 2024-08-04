@@ -3,26 +3,13 @@
 
   import { Box } from '$lib/components/ui/box';
   import { Badge } from '$lib/components/ui/badge';
-  import CreateTaskPopup from 'features/tasks/components/create-task-popup.svelte';
   import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
   import { getClient, jsonFetchWrapper } from '$lib/rpc/planner';
   import { getLocalTimeZone } from '@internationalized/date';
-  import { TaskQueryKeys, TaskQueryKeysMap } from 'features/tasks/constants';
+  import { TaskQueryKeys, TaskQueryKeysMap } from 'features/task/constants';
   import { PlayButton } from '$lib/components/play-button';
   import { CircleCheck, EllipsisVertical } from 'lucide-svelte';
   import { groupBy } from 'rambda';
-
-  let { open } = $state({
-    open: false
-  });
-
-  function openCreateTaskPopup() {
-    open = true;
-  }
-
-  function closeCreateTaskPopup() {
-    open = false;
-  }
 
   const queryClient = useQueryClient();
 
@@ -121,12 +108,6 @@
           </div>
         {/each}
       </div>
-
-      <Button variant="secondary" on:click={openCreateTaskPopup}>Add a task</Button>
     </div>
   {/snippet}
 </Box>
-
-{#if open}
-  <CreateTaskPopup {open} onClose={closeCreateTaskPopup} />
-{/if}

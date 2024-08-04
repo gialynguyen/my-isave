@@ -1,11 +1,1 @@
-{
-    "language": "en",
-    "flagWords": [],
-    "words": [
-        "dtos",
-        "Hono",
-        "superforms",
-        "typebox"
-    ],
-    "version": "0.2"
-}
+{"flagWords":[],"language":"en","version":"0.2","words":["dtos","Hono","superforms","typebox","mikro"]}
