@@ -2,7 +2,7 @@ import { tbValidator } from '$lib/typebox/hono';
 import { today } from '@internationalized/date';
 import { createTaskPayloadDto } from 'features/task/dtos/create-task';
 import { queryTasksConditionsDto } from 'features/task/dtos/query-tasks';
-import { updateTaskDto } from 'features/task/dtos/update-task';
+import { updateTaskPayloadDto } from 'features/task/dtos/update-task';
 import { createTask, queryTasks, updateTask } from 'features/task/services';
 import { Hono } from 'hono';
 
@@ -60,7 +60,7 @@ const taskRoutes = new Hono()
 
     return c.json(task);
   })
-  .put('/:id', tbValidator('json', updateTaskDto), async (c) => {
+  .put('/:id', tbValidator('json', updateTaskPayloadDto), async (c) => {
     const { id } = c.req.param();
     const payload = c.req.valid('json');
     const task = await updateTask(id, payload);

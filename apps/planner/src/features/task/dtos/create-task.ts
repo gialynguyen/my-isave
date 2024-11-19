@@ -1,4 +1,4 @@
-import { Type, type Static } from '@sinclair/typebox';
+import { Kind, Type, type Static } from '@sinclair/typebox';
 
 export const createTaskPayloadDto = Type.Object({
   title: Type.String({

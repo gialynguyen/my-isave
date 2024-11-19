@@ -1,4 +1,4 @@
-<script lang="ts" context="module">
+<script lang="ts" module>
   export type Props = {
     open: boolean;
     onClose: () => void;
@@ -86,11 +86,11 @@
 
 <Dialog.Root {open} {onOpenChange}>
   <Dialog.Content class="sm:max-w-[760px]">
-    <form method="post" use:enhance>
-      <Dialog.Header>
-        <Dialog.Title>Create a new task</Dialog.Title>
-      </Dialog.Header>
-      <div class="mt-4 py-2">
+    <Dialog.Header>
+      <Dialog.Title>Create a new task</Dialog.Title>
+    </Dialog.Header>
+    <div class="mt py-2">
+      <form method="post" use:enhance>
         <Form.Field {form} name="title">
           <Form.Control let:attrs>
             <Input
@@ -114,42 +114,42 @@
             <Form.FieldErrors />
           </Form.Control>
         </Form.Field>
+      </form>
 
-        <Popover.Root>
-          <Popover.Trigger asChild let:builder>
-            <Button
-              variant="secondary"
-              class="h-8 w-fit px-4 py-0 text-[12px] font-light"
-              builders={[builder]}
-            >
-              {dueDateState.dueDate
-                ? dueDateDisplayFormatter.format(dueDateState.dueDate.toDate(getLocalTimeZone()))
-                : 'Set due date...'}
-            </Button>
-          </Popover.Trigger>
-          <Popover.Content class="mt-4 w-auto p-0">
-            <Form.Field {form} name="dueDate">
-              <Form.Control>
-                <Calendar
-                  bind:value={dueDateState.dueDate}
-                  initialFocus
-                  isDateDisabled={(date) => {
-                    return date.compare(now(getLocalTimeZone())) < 0;
-                  }}
-                  onValueChange={(date) => {
-                    $formData.dueDate = date?.toDate(getLocalTimeZone()).toISOString();
-                    dueDateState.openCalendar = false;
-                  }}
-                />
-                <Form.FieldErrors />
-              </Form.Control>
-            </Form.Field>
-          </Popover.Content>
-        </Popover.Root>
-      </div>
-      <Dialog.Footer>
-        <Button class="h-8 px-8 py-0" type="submit" disabled={$createTask.isPending}>Create</Button>
-      </Dialog.Footer>
-    </form>
+      <Popover.Root>
+        <Popover.Trigger asChild let:builder>
+          <Button
+            variant="secondary"
+            class="h-8 w-fit px-4 py-0 text-[12px] font-light"
+            builders={[builder]}
+          >
+            {dueDateState.dueDate
+              ? dueDateDisplayFormatter.format(dueDateState.dueDate.toDate(getLocalTimeZone()))
+              : 'Set due date...'}
+          </Button>
+        </Popover.Trigger>
+        <Popover.Content class="mt-4 w-auto p-0">
+          <Form.Field {form} name="dueDate">
+            <Form.Control>
+              <Calendar
+                bind:value={dueDateState.dueDate}
+                initialFocus
+                isDateDisabled={(date) => {
+                  return date.compare(now(getLocalTimeZone())) < 0;
+                }}
+                onValueChange={(date) => {
+                  $formData.dueDate = date?.toDate(getLocalTimeZone()).toISOString();
+                  dueDateState.openCalendar = false;
+                }}
+              />
+              <Form.FieldErrors />
+            </Form.Control>
+          </Form.Field>
+        </Popover.Content>
+      </Popover.Root>
+    </div>
+    <Dialog.Footer>
+      <Button class="h-8 px-8 py-0" type="submit" disabled={$createTask.isPending}>Create</Button>
+    </Dialog.Footer>
   </Dialog.Content>
 </Dialog.Root>

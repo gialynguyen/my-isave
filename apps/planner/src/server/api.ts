@@ -4,6 +4,7 @@ import { createMiddleware } from 'hono/factory';
 import { logger } from 'hono/logger';
 import { getPostgresORM } from './providers/postgres';
 import taskRoutes from './routes/tasks';
+import reminderRoutes from './routes/reminders';
 
 const app = new Hono().basePath('/api');
 
@@ -16,7 +17,11 @@ app.use(
 
 app.use(logger());
 
-const routes = app.route('/tasks', taskRoutes);
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const routes = app
+  // API routes
+  .route('/tasks', taskRoutes)
+  .route('/reminders', reminderRoutes);
 
 export type ApiRoutes = typeof routes;
 export { app };

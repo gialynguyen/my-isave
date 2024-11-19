@@ -1,4 +1,4 @@
-import { Type } from '@sinclair/typebox';
+import { Kind, Type, TypeRegistry } from '@sinclair/typebox';
 
 export const PaginationQuery = Type.Object({
   page: Type.Union([Type.String(), Type.Number()]),
@@ -14,3 +14,15 @@ export const CursorQuery = Type.Object({
   before: Type.String(),
   last: Type.Union([Type.String(), Type.Number()])
 });
+
+// StringEnum
+TypeRegistry.Set('StringEnum', (schema: { enum: string[] }, value: unknown) => {
+  return typeof value === 'string' && schema.enum.includes(value);
+});
+
+export const StringEnum = <T extends string[]>(values: [...T]) =>
+  Type.Unsafe<T[number]>({
+    [Kind]: 'StringEnum',
+    type: 'string',
+    enum: values
+  });

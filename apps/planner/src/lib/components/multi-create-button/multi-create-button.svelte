@@ -1,4 +1,4 @@
-<script context="module">
+<script module lang="ts">
   type CreateButtonState = {
     buttonStatus: 'collapsed' | 'expanded';
   };
@@ -13,6 +13,7 @@
   import { twMerge } from 'tailwind-merge';
   import { fly } from 'svelte/transition';
   import CreateTaskPopup from 'features/task/components/create-task-popup.svelte';
+  import CreateReminderPopup from 'features/reminder/components/create-reminder-popup.svelte';
 
   let createButtonState = $state<CreateButtonState>({
     buttonStatus: 'collapsed'
@@ -68,3 +69,5 @@
 {#if taskPopupState.open}
   <CreateTaskPopup open={taskPopupState.open} onClose={closeCreateTaskPopup} />
 {/if}
+
+<CreateReminderPopup />
