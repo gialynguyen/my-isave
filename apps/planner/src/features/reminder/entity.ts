@@ -38,6 +38,7 @@ export class ReminderEntity extends BaseEntity {
     nullable: true
   })
   description?: string;
+
   @Property({
     nullable: true,
     type: 'timestamp'
@@ -50,14 +51,6 @@ export class ReminderEntity extends BaseEntity {
   })
   dueTime?: Date;
 
-  @Property()
-  isCompleted: boolean = false;
-
-  @Property({
-    nullable: true
-  })
-  completedAt?: Date;
-
   @Embedded(() => ReminderRepeatSettings, {
     nullable: true
   })
@@ -67,4 +60,12 @@ export class ReminderEntity extends BaseEntity {
     nullable: true
   })
   notificationTime?: Date;
+
+  @Property()
+  isCompleted: boolean = false;
+
+  @Property({
+    nullable: true
+  })
+  completedAt?: Date;
 }
