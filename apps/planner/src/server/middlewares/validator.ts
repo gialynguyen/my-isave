@@ -1,7 +1,7 @@
 import type { Static, TSchema } from '@sinclair/typebox';
-import { Value, type ValueError } from '@sinclair/typebox/value';
+import { type ValueError } from '@sinclair/typebox/value';
 import type { Context, Env, Input, MiddlewareHandler, ValidationTargets } from 'hono';
-import { validator } from 'hono/validator';
+import { validator as openAPIValidator } from 'hono-openapi/typebox';
 
 type Hook<T, E extends Env, P extends string> = (
   result: { success: true; data: T } | { success: false; errors: ValueError[] },
@@ -10,7 +10,7 @@ type Hook<T, E extends Env, P extends string> = (
 
 type HasUndefined<T> = undefined extends T ? true : false;
 
-export function tbValidator<
+export function validator<
   T extends TSchema,
   Target extends keyof ValidationTargets,
   E extends Env,
@@ -38,19 +38,5 @@ export function tbValidator<
   V extends I = I
 >(target: Target, schema: T, hook?: Hook<Static<T>, E, P>): MiddlewareHandler<E, P, V> {
   // @ts-expect-error not typed well
-  return validator(target, (data, c) => {
-    const ok = Value.Check(schema, data);
-    if (!ok) {
-      return c.json({ success: false, errors: [...Value.Errors(schema, data)] }, 400);
-    }
-
-    if (hook) {
-      const hookResult = hook({ success: true, data }, c);
-      if (hookResult instanceof Response || hookResult instanceof Promise) {
-        return hookResult;
-      }
-    }
-
-    return data as Static<T>;
-  });
+  return openAPIValidator(target, schema, hook);
 }

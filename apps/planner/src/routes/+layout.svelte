@@ -1,11 +1,12 @@
 <script lang="ts">
   import './fonts.css';
+  import '../app.css';
+
   import { ModeWatcher } from 'mode-watcher';
   import Layout from '$lib/layouts/layout.svelte';
   import { browser } from '$app/environment';
   import { QueryClient, QueryClientProvider } from '@tanstack/svelte-query';
 
-  import '../app.pcss';
   import { page } from '$app/stores';
   import { MultiCreateButton } from '$lib/components/multi-create-button';
 
@@ -28,7 +29,7 @@
     <Layout>
       <slot />
     </Layout>
-    <div class="fixed bottom-16 right-16">
+    <div class="fixed right-16 bottom-16">
       <MultiCreateButton />
     </div>
   </QueryClientProvider>
