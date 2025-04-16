@@ -55,6 +55,7 @@ const routes = app
   .get(
     '/docs',
     apiReference({
+      // @ts-ignore
       spec: { url: '/api/openapi.json' }
     })
   );

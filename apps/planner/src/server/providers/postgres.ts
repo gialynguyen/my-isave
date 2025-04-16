@@ -14,7 +14,11 @@ export async function createPostgresORM() {
     user: POSTGRES_USER,
     password: POSTGRES_PASSWORD,
     debug: true,
-    extensions: [EntityGenerator, Migrator]
+    extensions: [EntityGenerator, Migrator],
+    migrations: {
+      path: 'dist/migrations',
+      pathTs: 'src/migrations'
+    }
   });
 
   if (!orm) {
@@ -29,5 +33,5 @@ export function getPostgresORM() {
 }
 
 export function getPostgresEm() {
-  return orm.em;
+  return orm?.em;
 }

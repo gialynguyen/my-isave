@@ -22,7 +22,8 @@ export const queryTasksConditionsDto = Type.Composite([
           to: Type.Number()
         })
       ])
-    )
+    ),
+    parentTaskId: Type.Optional(Type.Union([Type.String(), Type.Literal('null')]))
   })
 ]);
 

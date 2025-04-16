@@ -1,14 +1,15 @@
 <script lang="ts">
-  import './fonts.css';
   import '../app.css';
+  import './fonts.css';
 
-  import { ModeWatcher } from 'mode-watcher';
-  import Layout from '$lib/layouts/layout.svelte';
   import { browser } from '$app/environment';
+  import Layout from '$lib/layouts/layout.svelte';
   import { QueryClient, QueryClientProvider } from '@tanstack/svelte-query';
+  import { ModeWatcher } from 'mode-watcher';
 
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
   import { MultiCreateButton } from '$lib/components/multi-create-button';
+  import { Router } from '$lib/router';
 
   const queryClient = new QueryClient({
     defaultOptions: {
@@ -22,16 +23,18 @@
 
 <ModeWatcher defaultMode="dark" />
 
-{#if $page.error}
+{#if page.error}
   <slot />
 {:else}
   <QueryClientProvider client={queryClient}>
-    <Layout>
-      <slot />
-    </Layout>
-    <div class="fixed right-16 bottom-16">
-      <MultiCreateButton />
-    </div>
+    <Router>
+      <Layout>
+        <slot />
+      </Layout>
+      <div class="fixed right-16 bottom-16">
+        <MultiCreateButton />
+      </div>
+    </Router>
   </QueryClientProvider>
 {/if}
 

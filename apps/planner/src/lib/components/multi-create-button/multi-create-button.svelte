@@ -1,16 +1,18 @@
 <script lang="ts">
-  import { Plus } from 'lucide-svelte';
-  import { fade, scale } from 'svelte/transition';
+  import { scale } from 'svelte/transition';
   import CreateTaskPopup from 'features/task/components/create-task-popup.svelte';
   import CreateReminderPopup from 'features/reminder/components/create-reminder-popup.svelte';
+  import Button from '../ui/button/button.svelte';
+  import { onMount } from 'svelte';
 
   let isOpen = $state(false);
+  let rootElement: HTMLDivElement | null = null;
   let taskPopupOpen = $state(false);
   let reminderPopupOpen = $state(false);
 
   const actions = [
     {
-      label: 'Task',
+      label: 'New Task',
       icon: '📋',
       onClick: () => {
         taskPopupOpen = true;
@@ -18,7 +20,7 @@
       }
     },
     {
-      label: 'Reminder',
+      label: 'Add Reminder',
       icon: '⏰',
       onClick: () => {
         reminderPopupOpen = true;
@@ -27,69 +29,73 @@
     }
   ];
 
-  function getPosition(index: number, total: number) {
-    const angleStep = 60 / (total - 1 || 1);
-    const angle = 180 + index * angleStep;
-    const radius = 70;
-
-    const x = radius * Math.cos((angle * Math.PI) / 180);
-    const y = radius * Math.sin((angle * Math.PI) / 180);
-
-    return `translate(${x}px, ${y}px)`;
+  function toggleMenu() {
+    isOpen = !isOpen;
   }
+
+  function handleClickOutside(event: MouseEvent) {
+    if (!isOpen) return;
+
+    if (!(event.target instanceof Node)) {
+      isOpen = false;
+      return;
+    }
+
+    if (rootElement && !rootElement.contains(event.target)) {
+      isOpen = false;
+    }
+  }
+
+  onMount(() => {
+    document.addEventListener('mousedown', handleClickOutside, true);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside, true);
+    };
+  });
 </script>
 
-<div class="fixed bottom-8 right-8 z-50">
+<div bind:this={rootElement} class="fixed right-14 bottom-12 z-50">
+  <!-- Main floating button -->
+  <Button
+    onclick={toggleMenu}
+    aria-label={isOpen ? 'Close menu' : 'Open menu'}
+    aria-expanded={isOpen}
+  >
+    <span class="text-lg font-light transition-transform duration-200" class:rotate-45={isOpen}>
+      +
+    </span>
+  </Button>
+
+  <!-- Menu items -->
   {#if isOpen}
-    <button
-      aria-label="Create"
-      class="fixed inset-0"
-      onclick={() => (isOpen = false)}
-      transition:fade={{ duration: 200 }}
-    ></button>
-  {/if}
-
-  <div class="relative">
-    {#if isOpen}
-      <div class="absolute bottom-0 right-0 h-0 w-0">
-        {#each actions as action, i}
-          <button
-            class="group absolute bottom-0 right-0 flex h-11 w-11 cursor-pointer items-center justify-center rounded-full bg-white shadow-md transition-all duration-200 hover:scale-110 hover:bg-gray-50"
-            style="transform: {getPosition(i, actions.length)}"
-            onclick={action.onClick}
-            transition:scale={{
-              duration: 200,
-              delay: 50 * i,
-              start: 0.8
-            }}
-          >
-            <span class="text-xl">{action.icon}</span>
-            <span
-              class="pointer-events-none absolute left-0 top-1/2 -translate-x-[115%] -translate-y-1/2 whitespace-nowrap rounded bg-gray-700 px-3 py-1 text-xs text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100"
-            >
-              {action.label}
-            </span>
-          </button>
-        {/each}
-      </div>
-    {/if}
-
-    <button
-      class="z-50 flex h-14 w-14 cursor-pointer items-center justify-center rounded-full bg-blue-500 shadow-lg shadow-blue-500/30 transition-all duration-200 hover:bg-blue-600 active:bg-blue-700"
-      class:bg-blue-700={isOpen}
-      onclick={() => (isOpen = !isOpen)}
+    <div
+      class="absolute right-0 bottom-12 w-48 overflow-hidden rounded-md border border-[#2E2E35] bg-[#1E1E20] shadow-lg transition-all duration-200"
+      role="menu"
+      style="transform-origin: bottom right;"
+      in:scale={{ duration: 150, start: 0.95, opacity: 0 }}
+      out:scale={{ duration: 150, start: 0.95, opacity: 0 }}
     >
-      <Plus
-        size="24"
-        color="#fff"
-        style="transform: rotate({isOpen ? '45deg' : '0deg'}); transition: transform 0.2s"
-      />
-    </button>
-  </div>
+      {#each actions as action, i}
+        <Button
+          variant="outline"
+          onclick={action.onClick}
+          class="flex w-full justify-start rounded-none border-none px-3 py-2 text-left text-sm text-[#E2E2E4] transition-colors duration-150 hover:bg-[#2E2E35]"
+          role="menuitem"
+        >
+          <span
+            class="mr-3 flex h-5 w-5 items-center justify-center rounded bg-[#2E2E35] text-xs font-medium text-[#A1A1AA]"
+            >{action.icon}</span
+          >
+          <span class="font-medium">{action.label}</span>
+        </Button>
+      {/each}
+    </div>
+  {/if}
 </div>
 
 {#if taskPopupOpen}
-  <CreateTaskPopup open={taskPopupOpen} onClose={() => (taskPopupOpen = false)} />
+  <CreateTaskPopup bind:open={taskPopupOpen} />
 {/if}
 
 {#if reminderPopupOpen}

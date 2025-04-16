@@ -1,10 +1,8 @@
 <script lang="ts">
-  import { page } from '$app/stores';
-  import { Button } from '$lib/components/ui/button';
-  import { ScrollArea } from '$lib/components/ui/scroll-area';
-  import { cn } from '$lib/utils';
+  import { page } from '$app/state';
+  import * as Sidebar from '$lib/components/ui/sidebar';
 
-  let { className = '' } = $props();
+  let { children } = $props();
   const features = [
     {
       label: 'Dashboard',
@@ -25,31 +23,64 @@
   ];
 
   let currentFeature = $derived.by(() => {
-    return features.find((feature) => feature.link === $page.route.id) || features[0];
+    return features.find((feature) => feature.link === page.route.id) || features[0];
   });
 </script>
 
-<div class={cn('space-y-4 py-4 pb-12', className)}>
-  <h2 class="mb-2 px-4 text-lg font-semibold tracking-tight">Steven Nguyen</h2>
-  <ScrollArea class="h-lvh">
-    <div class="px-3 py-2">
-      <div class="space-y-1">
-        {#each features as feature}
-          <Button
-            href={feature.link}
-            variant={feature === currentFeature ? 'secondary' : 'ghost'}
-            class="w-full justify-start">{feature.label}</Button
-          >
-        {/each}
-      </div>
-    </div>
-    <div class="px-3 py-2">
-      <h2 class="mb-2 px-4 text-lg font-semibold tracking-tight">My List</h2>
-      <div class="space-y-1">
-        <Button variant="ghost" class="w-full justify-start">Personal</Button>
-        <Button variant="ghost" class="w-full justify-start">Company</Button>
-        <Button variant="ghost" class="w-full justify-start">VC-Team</Button>
-      </div>
-    </div>
-  </ScrollArea>
-</div>
+<Sidebar.Provider>
+  <Sidebar.Root>
+    <Sidebar.Header>
+      <a href="/" class="text-xl font-bold">My Planner</a>
+    </Sidebar.Header>
+    <Sidebar.Content>
+      <Sidebar.Group>
+        <Sidebar.GroupContent>
+          <Sidebar.Menu>
+            {#each features as feature (feature.link)}
+              <Sidebar.MenuItem>
+                <Sidebar.MenuButton>
+                  {#snippet child({ props })}
+                    <a href={feature.link} {...props}>
+                      {feature.label}
+                    </a>
+                  {/snippet}
+                </Sidebar.MenuButton>
+              </Sidebar.MenuItem>
+            {/each}
+          </Sidebar.Menu>
+        </Sidebar.GroupContent>
+      </Sidebar.Group>
+      <Sidebar.Group>
+        <Sidebar.GroupLabel>My List</Sidebar.GroupLabel>
+        <Sidebar.GroupContent>
+          <Sidebar.Menu>
+            <Sidebar.MenuItem>
+              <Sidebar.MenuButton>
+                {#snippet child({ props })}
+                  <a {...props}> Personal </a>
+                {/snippet}
+              </Sidebar.MenuButton>
+            </Sidebar.MenuItem>
+            <Sidebar.MenuItem>
+              <Sidebar.MenuButton>
+                {#snippet child({ props })}
+                  <a {...props}> Company </a>
+                {/snippet}
+              </Sidebar.MenuButton>
+            </Sidebar.MenuItem>
+            <Sidebar.MenuItem>
+              <Sidebar.MenuButton>
+                {#snippet child({ props })}
+                  <a {...props}> VC Team </a>
+                {/snippet}
+              </Sidebar.MenuButton>
+            </Sidebar.MenuItem>
+          </Sidebar.Menu>
+        </Sidebar.GroupContent>
+      </Sidebar.Group>
+    </Sidebar.Content>
+    <Sidebar.Footer />
+  </Sidebar.Root>
+
+  {@render children?.()}
+</Sidebar.Provider>

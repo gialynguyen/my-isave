@@ -4,11 +4,12 @@
 </script>
 
 <div class="flex">
-  <Sidebar className="w-1/4 max-w-72 min-w-56" />
-  <div class="h-svh w-full">
-    <Navbar className="h-16" />
-    <div class="h-[calc(100%-8rem)] px-3">
-      <slot />
+  <Sidebar>
+    <div class="h-svh w-full">
+      <Navbar className="h-16" />
+      <div class="h-[calc(100%-8rem)] px-6">
+        <slot />
+      </div>
     </div>
-  </div>
+  </Sidebar>
 </div>

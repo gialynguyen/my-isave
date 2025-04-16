@@ -13,7 +13,8 @@
     "moduleResolution": "bundler",
     "types": ["node"],
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true
+    "emitDecoratorMetadata": true,
+    "allowArbitraryExtensions": true
   },
   "files": ["src/global.d.ts"]
 }

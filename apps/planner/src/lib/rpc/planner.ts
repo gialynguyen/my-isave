@@ -25,7 +25,7 @@ export async function jsonFetchWrapper<R>(
   fetch?: Window['fetch']
 ): Promise<R> {
   const isBrowser = typeof window !== 'undefined';
-  const client = getClient(fetch || isBrowser ? window.fetch : undefined);
+  const client = getClient(fetch || (isBrowser ? window.fetch : undefined));
   const res = await fetcher(client);
   if (!res.ok) {
     throw new Error('[fetch]: Something error');

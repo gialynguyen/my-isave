@@ -14,12 +14,7 @@
   let { className, title, body }: Props = $props();
 </script>
 
-<div
-  class={twMerge(
-    'h-full w-full rounded-2xl border border-transparent bg-primary-foreground px-5 py-4',
-    className
-  )}
->
+<div class={twMerge('bg-emphasis h-full w-full rounded-2xl border px-5 py-4', className)}>
   {#if title}
     {@render title()}
   {/if}

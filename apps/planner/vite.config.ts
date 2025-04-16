@@ -1,9 +1,15 @@
 import { sveltekit } from '@sveltejs/kit/vite';
 import { swc } from 'rollup-plugin-swc3';
+import { kitRoutes } from 'vite-plugin-kit-routes';
 
 import type { Server } from 'http';
+import { dirname } from 'path';
 import { loadEnvFile } from 'process';
+import { fileURLToPath } from 'url';
 import { defineConfig } from 'vitest/config';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 loadEnvFile();
 
@@ -12,6 +18,7 @@ export default defineConfig({
     swc({
       exclude: 'node_modules/',
       jsc: {
+        baseUrl: __dirname,
         keepClassNames: true,
         parser: {
           syntax: 'typescript',
@@ -43,6 +50,9 @@ export default defineConfig({
       minify: false
     }),
     sveltekit(),
+    kitRoutes({
+      generated_file_path: 'src/lib/router/ROUTES.ts'
+    }),
     {
       name: 'sveltekit-inject-httpserver',
       configureServer(server) {

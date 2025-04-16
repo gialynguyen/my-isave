@@ -19,7 +19,7 @@ bun:
   syncProjectWorkspaceDependencies: true
 
 node:
-  version: "23.5.0"
+  version: "23"
   packageManager: "pnpm"
   pnpm:
-    version: "9.6.0"
+    version: "10"
