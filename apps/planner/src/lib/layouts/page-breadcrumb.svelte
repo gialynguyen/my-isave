@@ -141,6 +141,10 @@
       const routeModule =
         routeModules === undefined ? undefined : routeModules[`${completeRoute}+page.svelte`];
 
+      if (!routeModule) {
+        continue;
+      }
+
       let url: string | undefined = completeUrl;
 
       // Don't show a link for the breadcrumb representing the current page

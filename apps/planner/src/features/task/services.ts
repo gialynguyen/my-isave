@@ -1,15 +1,14 @@
-import { wrap, type FilterObject } from '@mikro-orm/core';
+import { serialize, wrap, type FilterObject } from '@mikro-orm/core';
 import { getPostgresEm } from 'server/providers/postgres';
 import type { CreateTaskPayload } from './dtos/create-task';
+import type { TaskDefaultOutput } from './dtos/task-ouput';
 import type { UpdateTaskDto } from './dtos/update-task';
 import { TaskEntity } from './entity';
 import { taskPostgresRepo } from './repository';
-import { generateShortId } from './utils/short-id';
 
 export async function createTask(payload: CreateTaskPayload) {
   const task = new TaskEntity();
 
-  task.shortId = generateShortId();
   task.title = payload.title;
   task.description = payload.description;
 
@@ -95,7 +94,9 @@ export async function queryTasks<Filters extends FilterObject<TaskEntity>>(
     populate: ['subTasks']
   });
 
-  return tasks;
+  const taskDTO: TaskDefaultOutput[] = serialize(tasks);
+
+  return taskDTO;
 }
 
 export async function updateTask(id: string, payload: UpdateTaskDto) {

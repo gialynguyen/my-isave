@@ -1,5 +1,6 @@
 import { BaseEntity } from '$lib/postgres-orm';
-import { Collection, Entity, ManyToOne, OneToMany, Property } from '@mikro-orm/core';
+import { BeforeCreate, Collection, Entity, ManyToOne, OneToMany, Property } from '@mikro-orm/core';
+import { generateShortId } from './utils/short-id';
 
 @Entity({
   tableName: 'task'
@@ -35,4 +36,9 @@ export class TaskEntity extends BaseEntity {
 
   @OneToMany(() => TaskEntity, (task) => task.parentTask, { orphanRemoval: true })
   subTasks = new Collection<TaskEntity>(this);
+
+  @BeforeCreate()
+  generateShortId() {
+    this.shortId = generateShortId();
+  }
 }

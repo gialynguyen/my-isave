@@ -5,15 +5,17 @@
 </script>
 
 <script lang="ts">
+  import { goto } from '$app/navigation';
   import { Button } from '$lib/components/ui/button';
   import { Textarea } from '$lib/components/ui/textarea';
-  import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
   import { getClient, jsonFetchWrapper } from '$lib/rpc/planner';
+  import { formatTimeAgo } from '$lib/utils/date';
+  import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
   import { TaskQueryKeys } from 'features/task/constants';
   import { Plus } from 'lucide-svelte';
-  import { goto } from '$app/navigation';
+  import type { PageData } from './$types';
 
-  let { data }: { data: any } = $props();
+  let { data }: { data: PageData } = $props();
 
   const shortId = page.params.shortId;
   const queryClient = useQueryClient();
@@ -34,6 +36,8 @@
     enabled: !!shortId,
     refetchOnMount: false
   });
+
+  let task = $derived($taskQuery.data);
 
   // Toggle task completion status
   const toggleTaskCompletion = createMutation({
@@ -60,6 +64,10 @@
   // Delete task
   const deleteTaskMutation = createMutation({
     mutationFn: () => {
+      if (!$taskQuery.data) {
+        throw new Error('Task data is not available');
+      }
+
       return getClient(fetch).tasks[':id'].$delete({
         param: {
           id: $taskQuery.data?.id
@@ -92,81 +100,97 @@
   }
 </script>
 
-<div class="container mx-auto py-8 px-4 md:px-6 text-primary-foreground">
-  {#if $taskQuery.isLoading}
-    <p class="text-center text-muted-foreground">Loading task details...</p>
-  {:else if $taskQuery.error}
-    <div class="flex h-[200px] items-center justify-center rounded-md border border-destructive bg-destructive/10 p-4">
-      <p class="text-center text-destructive">
-        Error loading task: {$taskQuery.error.message || 'Unknown error'}
-      </p>
-    </div>
-  {:else if $taskQuery.data}
-    <!-- Main Content Area -->
-    <div class="max-w-3xl mx-auto">
-      <!-- Title -->
-      <h1 class="mb-4 text-3xl font-bold">{$taskQuery.data.title}</h1>
-      <div class="mb-2 text-sm text-muted-foreground">
-        <span class="font-mono bg-muted px-1 py-0.5 rounded">{$taskQuery.data.shortId}</span>
+{#if task}
+  <div class="text-primary-foreground container mx-auto px-4 py-8 md:px-6">
+    {#if $taskQuery.isLoading}
+      <p class="text-muted-foreground text-center">Loading task details...</p>
+    {:else if $taskQuery.error}
+      <div
+        class="border-destructive bg-destructive/10 flex h-[200px] items-center justify-center rounded-md border p-4"
+      >
+        <p class="text-destructive text-center">
+          Error loading task: {$taskQuery.error.message || 'Unknown error'}
+        </p>
       </div>
-
-      <!-- Description -->
-      <div class="mb-6">
-        {#if $taskQuery.data.description}
-          <p class="text-muted-foreground whitespace-pre-line">
-            {$taskQuery.data.description}
-          </p>
-        {:else}
-          <button class="text-muted-foreground hover:text-foreground text-sm" onclick={editTask}>
-            Add description...
-          </button>
-        {/if}
-      </div>
-
-      <!-- Sub-issues Button -->
-      <div class="mb-8">
-        <Button variant="ghost" size="sm" class="text-muted-foreground -ml-2 px-2 py-1" onclick={addSubIssue}>
-          <Plus class="mr-1 h-4 w-4" />
-          Add sub-issues
-        </Button>
-        <!-- Placeholder for potential future sub-issue list -->
-      </div>
-
-      <hr class="my-8 border-border/50" />
-
-      <!-- Activity Section -->
-      <div class="space-y-6">
-        <div class="flex justify-between items-center">
-           <h2 class="text-xl font-semibold">Activity</h2>
-           <!-- <Button variant="outline" size="sm" class="text-xs">
-             Unsubscribe -->
-             <!-- TODO: Add notification icon? -->
-           <!-- </Button> -->
+    {:else if $taskQuery.data}
+      <!-- Main Content Area -->
+      <div class="mx-auto max-w-3xl">
+        <!-- Title -->
+        <h1 class="mb-4 text-3xl font-bold">{$taskQuery.data.title}</h1>
+        <div class="text-muted-foreground mb-2 text-sm">
+          <span class="bg-muted rounded px-1 py-0.5 font-mono">{$taskQuery.data.shortId}</span>
         </div>
 
-        <!-- Comment Input -->
-        <div>
-          <!-- TODO: Add user avatar? -->
-          <Textarea placeholder="Leave a comment..." class="bg-background/50 text-foreground border-border/50 focus:border-primary resize-none" />
-          <div class="mt-2 flex justify-end">
-            <Button size="sm">Comment</Button> <!-- TODO: Add submit functionality -->
+        <!-- Description -->
+        <div class="mb-6">
+          {#if $taskQuery.data.description}
+            <p class="text-muted-foreground whitespace-pre-line">
+              {$taskQuery.data.description}
+            </p>
+          {:else}
+            <button class="text-muted-foreground hover:text-foreground text-sm" onclick={editTask}>
+              Add description...
+            </button>
+          {/if}
+        </div>
+
+        <!-- Sub-issues Button -->
+        <div class="mb-8">
+          <Button
+            variant="ghost"
+            size="sm"
+            class="text-muted-foreground -ml-2 px-2 py-1"
+            onclick={addSubIssue}
+          >
+            <Plus class="mr-1 h-4 w-4" />
+            Add sub-issues
+          </Button>
+          <!-- Placeholder for potential future sub-issue list -->
+        </div>
+
+        <hr class="border-border/50 my-8" />
+
+        <!-- Activity Section -->
+        <div class="space-y-6">
+          <div class="flex items-center justify-between">
+            <h2 class="text-xl font-semibold">Activity</h2>
+            <!-- <Button variant="outline" size="sm" class="text-xs">
+               Unsubscribe -->
+            <!-- TODO: Add notification icon? -->
+            <!-- </Button> -->
+          </div>
+
+          <!-- Comment Input -->
+          <div>
+            <!-- TODO: Add user avatar? -->
+            <Textarea
+              placeholder="Leave a comment..."
+              class="bg-background/50 text-foreground border-border/50 focus:border-primary resize-none"
+            />
+            <div class="mt-2 flex justify-end">
+              <Button size="sm">Comment</Button>
+              <!-- TODO: Add submit functionality -->
+            </div>
+          </div>
+
+          <!-- Placeholder for Activity Feed -->
+          <div class="text-muted-foreground border-border/50 border-t pt-4 text-sm">
+            <!-- Example activity item -->
+            <div class="flex items-center gap-2">
+              <!-- TODO: User avatar -->
+              <span class="text-foreground font-medium">gialynguyen</span>
+              <span>created the issue</span>
+              <span class="text-xs">• {formatTimeAgo(new Date(task.createdAt))}</span>
+            </div>
+            <!-- More activity items would go here -->
           </div>
         </div>
-
-        <!-- Placeholder for Activity Feed -->
-        <div class="text-muted-foreground text-sm pt-4 border-t border-border/50">
-          <!-- Example activity item -->
-          <div class="flex items-center gap-2">
-            <!-- TODO: User avatar -->
-            <span class="font-medium text-foreground">gialynguyen</span>
-            <span>created the issue</span>
-            <span class="text-xs">• 1y ago</span>
-          </div>
-          <!-- More activity items would go here -->
-        </div>
       </div>
-    </div>
-  {:else}
-     <p class="text-center text-muted-foreground">Task not found.</p>
-  {/if}
-</div>
+    {:else}
+      <p class="text-muted-foreground text-center">Task not found.</p>
+    {/if}
+  </div>
+{:else}
+  <!-- Not found page  -->
+  <div>Not found</div>
+{/if}

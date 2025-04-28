@@ -14,9 +14,6 @@ const PAGES = {
   "/dashboard": `/dashboard`,
   "/next-7-days": `/next-7-days`,
   "/tasks": `/tasks`,
-  "/tasks/[id]": (params: { id: (string | number) }) => {
-    return `/tasks/${params['id']}`
-  },
   "/tasks/[shortId]/[name]": (params: { shortId: (string | number), name: (string | number) }) => {
     return `/tasks/${params['shortId']}/${params['name']}`
   }
@@ -165,9 +162,9 @@ export function route<T extends keyof AllTypes>(key: T, ...params: any[]): strin
 * ```
 */
 export type KIT_ROUTES = {
-  PAGES: { '/': never, '/calendar': never, '/dashboard': never, '/next-7-days': never, '/tasks': never, '/tasks/[id]': 'id', '/tasks/[shortId]/[name]': 'shortId' | 'name' }
+  PAGES: { '/': never, '/calendar': never, '/dashboard': never, '/next-7-days': never, '/tasks': never, '/tasks/[shortId]/[name]': 'shortId' | 'name' }
   SERVERS: { 'GET /api/[...slug]': 'slug', 'PUT /api/[...slug]': 'slug', 'DELETE /api/[...slug]': 'slug', 'POST /api/[...slug]': 'slug', 'PATCH /api/[...slug]': 'slug', 'fallback /api/[...slug]': 'slug' }
   ACTIONS: Record<string, never>
   LINKS: Record<string, never>
-  Params: { 'id': never, 'shortId': never, 'name': never, 'slug': never }
+  Params: { 'shortId': never, 'name': never, 'slug': never }
 }
