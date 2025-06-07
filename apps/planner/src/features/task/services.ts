@@ -2,7 +2,7 @@ import { serialize, wrap, type FilterObject } from '@mikro-orm/core';
 import { getPostgresEm } from 'server/providers/postgres';
 import type { CreateTaskPayload } from './dtos/create-task';
 import type { TaskDefaultOutput } from './dtos/task-ouput';
-import type { UpdateTaskDto } from './dtos/update-task';
+import type { UpdateTaskPayloadDto } from './dtos/update-task';
 import { TaskEntity } from './entity';
 import { taskPostgresRepo } from './repository';
 
@@ -53,10 +53,7 @@ export async function createTask(payload: CreateTaskPayload) {
 }
 
 export async function queryTasks<Filters extends FilterObject<TaskEntity>>(
-  params: {
-    dueDate?: Filters['dueDate'];
-    parentTaskId?: string | null;
-  },
+  filters: Filters,
   pagination: {
     page?: number;
     limit?: number;
@@ -67,16 +64,16 @@ export async function queryTasks<Filters extends FilterObject<TaskEntity>>(
   }
 ) {
   const { page, limit, after, first, before, last } = pagination;
-  const queryParams: any = { ...params };
+  const queryParams: any = { ...filters };
 
   // Handle parent task filtering
-  if (params.parentTaskId === null) {
+  if (filters.parentTask === null) {
     // Fetch only root tasks (tasks without a parent)
     queryParams.parentTask = null;
     delete queryParams.parentTaskId;
-  } else if (params.parentTaskId) {
+  } else if (filters.parentTask) {
     // Fetch sub-tasks of a specific parent
-    queryParams.parentTask = { id: params.parentTaskId };
+    queryParams.parentTask = { id: filters.parentTask };
     delete queryParams.parentTaskId;
   }
 
@@ -99,7 +96,7 @@ export async function queryTasks<Filters extends FilterObject<TaskEntity>>(
   return taskDTO;
 }
 
-export async function updateTask(id: string, payload: UpdateTaskDto) {
+export async function updateTask(id: string, payload: UpdateTaskPayloadDto) {
   const task = await taskPostgresRepo.findOneOrFail({ id });
   wrap(task).assign(payload);
 
@@ -112,5 +109,57 @@ export async function updateTask(id: string, payload: UpdateTaskDto) {
 }
 
 export async function getTaskByShortId(shortId: string) {
-  return taskPostgresRepo.findOneOrFail({ shortId }, { populate: ['subTasks'] });
+  return taskPostgresRepo.findOneOrFail(
+    {
+      shortId
+    },
+    {
+      populate: ['subTasks'],
+      populateWhere: {
+        subTasks: {
+          isArchived: false,
+          isDeleted: false
+        }
+      }
+    }
+  );
+}
+
+export async function deleteTemporarilyTask(id: string) {
+  const knex = taskPostgresRepo.getKnex();
+  const cteSelectQuery = knex
+    .raw(
+      `
+      WITH RECURSIVE task_hierarchy AS (
+      SELECT id
+      FROM task
+      WHERE id = ? AND "is_deleted" = false
+
+      UNION ALL
+
+      SELECT t.id
+      FROM task t
+      INNER JOIN task_hierarchy th ON t."parent_task_id" = th.id
+      WHERE t."is_deleted" = false
+    )
+    SELECT id from task_hierarchy
+    `,
+      [id]
+    )
+    .toString();
+
+  const em = getPostgresEm();
+  const idsToDeleteResult = await em.getConnection('read').execute(cteSelectQuery);
+  const idsToDelete: string[] = idsToDeleteResult.map((row) => row.id);
+  if (idsToDelete.length === 0) {
+    throw new Error('No tasks found to delete');
+  }
+
+  const affectedRows = await em.nativeUpdate(
+    TaskEntity,
+    { id: { $in: idsToDelete } },
+    { isDeleted: true, deletedAt: new Date() }
+  );
+
+  return affectedRows;
 }

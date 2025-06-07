@@ -23,7 +23,9 @@ export class TaskEntity extends BaseEntity {
   })
   dueDate?: Date;
 
-  @Property()
+  @Property({
+    index: true
+  })
   isCompleted: boolean = false;
 
   @Property({
@@ -31,7 +33,27 @@ export class TaskEntity extends BaseEntity {
   })
   completedAt?: Date;
 
-  @ManyToOne(() => TaskEntity, { nullable: true })
+  @Property({
+    index: true
+  })
+  isArchived: boolean = false;
+
+  @Property({
+    nullable: true
+  })
+  archivedAt?: Date;
+
+  @Property({
+    nullable: true
+  })
+  deletedAt?: Date;
+
+  @Property({
+    index: true
+  })
+  isDeleted: boolean = false;
+
+  @ManyToOne(() => TaskEntity, { nullable: true, index: true, deleteRule: 'cascade' })
   parentTask?: TaskEntity;
 
   @OneToMany(() => TaskEntity, (task) => task.parentTask, { orphanRemoval: true })

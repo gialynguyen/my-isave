@@ -1,18 +1,26 @@
 <script lang="ts" module>
   import { page } from '$app/state';
+  import type { TaskManagerFormData } from 'features/task/components/task-manager.svelte';
 
   export const getPageTitle = () => page.data.task.title;
 </script>
 
 <script lang="ts">
-  import { goto } from '$app/navigation';
   import { Button } from '$lib/components/ui/button';
   import { Textarea } from '$lib/components/ui/textarea';
   import { getClient, jsonFetchWrapper } from '$lib/rpc/planner';
   import { formatTimeAgo } from '$lib/utils/date';
+  import { debounce } from '@tanstack/pacer';
   import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
+  import SubTaskManager, {
+    useSubTaskManager
+  } from 'features/task/components/sub-task-manager.svelte';
+  import TaskManager from 'features/task/components/task-manager.svelte';
   import { TaskQueryKeys } from 'features/task/constants';
-  import { Plus } from 'lucide-svelte';
+  import type { CreateSubTaskPayload } from 'features/task/dtos/create-task';
+  import { updateTaskPayloadDto, type UpdateTaskPayloadDto } from 'features/task/dtos/update-task';
+  import { superForm } from 'sveltekit-superforms';
+  import { typebox } from 'sveltekit-superforms/adapters';
   import type { PageData } from './$types';
 
   let { data }: { data: PageData } = $props();
@@ -21,7 +29,7 @@
   const queryClient = useQueryClient();
 
   // Fetch task details
-  const taskQuery = createQuery({
+  const queryTask = createQuery({
     queryKey: ['task', shortId],
     queryFn: () => {
       return jsonFetchWrapper((client) =>
@@ -37,12 +45,115 @@
     refetchOnMount: false
   });
 
-  let task = $derived($taskQuery.data);
+  const updateTask = createMutation({
+    mutationFn: (params: { id: string; payload: UpdateTaskPayloadDto }) => {
+      return getClient(fetch).tasks[':id'].$patch({
+        json: params.payload,
+        param: {
+          id: params.id
+        }
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['task', shortId]
+      });
+    }
+  });
+
+  const createSubTask = createMutation({
+    mutationFn: (params: { payload: CreateSubTaskPayload }) => {
+      return getClient(fetch).tasks.$post({
+        json: {
+          ...params.payload
+        }
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['task', shortId]
+      });
+    }
+  });
+
+  const deleteTask = createMutation({
+    mutationFn: (params: { id: string }) => {
+      return getClient(fetch).tasks[':id'].$delete({
+        param: {
+          id: params.id
+        }
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['task', shortId]
+      });
+    }
+  });
+
+  let task = $queryTask.data!;
+
+  let taskDetailForm = superForm<TaskManagerFormData>(task, {
+    SPA: true,
+    dataType: 'json',
+    validators: typebox(updateTaskPayloadDto),
+    onChange: debounce(
+      (event) => {
+        const { paths, get } = event;
+        const path = paths[0];
+        const value = get(path);
+
+        if (path && value) {
+          $updateTask.mutate({
+            id: task.id,
+            payload: {
+              [path]: value
+            }
+          });
+        }
+      },
+      {
+        wait: 500
+      }
+    )
+  });
+
+  const { subTasks, addSubTask, updateSubTask, removeSubTask, onSubtaskEvent } = useSubTaskManager(
+    task.subTasks
+  );
+
+  onSubtaskEvent('added', (subTask) => {
+    $createSubTask.mutate({
+      payload: {
+        ...subTask,
+        parentTask: task.id
+      }
+    });
+  });
+
+  onSubtaskEvent('updated', (task) => {
+    if (task.id) {
+      $updateTask.mutate({
+        id: task.id,
+        payload: {
+          ...task
+        }
+      });
+    }
+  });
+
+  onSubtaskEvent('removed', (task) => {
+    if (task.id) {
+      $deleteTask.mutate({
+        id: task.id
+      });
+    }
+  });
 
   // Toggle task completion status
   const toggleTaskCompletion = createMutation({
     mutationFn: (params: { id: string; isCompleted: boolean }) => {
-      return getClient(fetch).tasks[':id'].$put({
+      return getClient(fetch).tasks[':id'].$patch({
         json: {
           isCompleted: params.isCompleted
         },
@@ -60,134 +171,65 @@
       });
     }
   });
-
-  // Delete task
-  const deleteTaskMutation = createMutation({
-    mutationFn: () => {
-      if (!$taskQuery.data) {
-        throw new Error('Task data is not available');
-      }
-
-      return getClient(fetch).tasks[':id'].$delete({
-        param: {
-          id: $taskQuery.data?.id
-        }
-      });
-    },
-    onSuccess() {
-      queryClient.invalidateQueries({
-        queryKey: TaskQueryKeys
-      });
-      goto('/dashboard');
-    }
-  });
-
-  // Edit task (dispatches event for modal or other UI)
-  function editTask() {
-    if ($taskQuery.data) {
-      window.dispatchEvent(
-        new CustomEvent('edit-task', {
-          detail: { task: $taskQuery.data }
-        })
-      );
-    }
-  }
-
-  // Placeholder function for adding sub-issues
-  function addSubIssue() {
-    console.log('Add sub-issue clicked for task:', $taskQuery.data?.id);
-    // TODO: Implement actual logic, maybe dispatch event or navigate
-  }
 </script>
 
 {#if task}
   <div class="text-primary-foreground container mx-auto px-4 py-8 md:px-6">
-    {#if $taskQuery.isLoading}
+    {#if $queryTask.isLoading}
       <p class="text-muted-foreground text-center">Loading task details...</p>
-    {:else if $taskQuery.error}
+    {:else if $queryTask.error}
       <div
         class="border-destructive bg-destructive/10 flex h-[200px] items-center justify-center rounded-md border p-4"
       >
         <p class="text-destructive text-center">
-          Error loading task: {$taskQuery.error.message || 'Unknown error'}
+          Error loading task: {$queryTask.error.message || 'Unknown error'}
         </p>
       </div>
-    {:else if $taskQuery.data}
+    {:else if $queryTask.data}
       <!-- Main Content Area -->
       <div class="mx-auto max-w-3xl">
-        <!-- Title -->
-        <h1 class="mb-4 text-3xl font-bold">{$taskQuery.data.title}</h1>
-        <div class="text-muted-foreground mb-2 text-sm">
-          <span class="bg-muted rounded px-1 py-0.5 font-mono">{$taskQuery.data.shortId}</span>
-        </div>
+        <TaskManager form={taskDetailForm} taskURL={page.url?.toString()}>
+          {#snippet subTask()}
+            <SubTaskManager
+              {subTasks}
+              onAddSubTask={addSubTask}
+              onUpdateSubTask={updateSubTask}
+              onRemoveSubTask={removeSubTask}
+              class="mt-4 ml-3"
+            />
+          {/snippet}
+        </TaskManager>
 
-        <!-- Description -->
-        <div class="mb-6">
-          {#if $taskQuery.data.description}
-            <p class="text-muted-foreground whitespace-pre-line">
-              {$taskQuery.data.description}
-            </p>
-          {:else}
-            <button class="text-muted-foreground hover:text-foreground text-sm" onclick={editTask}>
-              Add description...
-            </button>
-          {/if}
-        </div>
-
-        <!-- Sub-issues Button -->
-        <div class="mb-8">
-          <Button
-            variant="ghost"
-            size="sm"
-            class="text-muted-foreground -ml-2 px-2 py-1"
-            onclick={addSubIssue}
-          >
-            <Plus class="mr-1 h-4 w-4" />
-            Add sub-issues
-          </Button>
-          <!-- Placeholder for potential future sub-issue list -->
-        </div>
-
-        <hr class="border-border/50 my-8" />
-
-        <!-- Activity Section -->
-        <div class="space-y-6">
-          <div class="flex items-center justify-between">
-            <h2 class="text-xl font-semibold">Activity</h2>
-            <!-- <Button variant="outline" size="sm" class="text-xs">
-               Unsubscribe -->
-            <!-- TODO: Add notification icon? -->
-            <!-- </Button> -->
+        <div class="mt-4 ml-3 space-y-6">
+          <div class="flex items-center justify-end">
+            <div class="flex items-center gap-2">
+              <Button
+                variant="destructive"
+                size="sm"
+                onclick={() => $deleteTask.mutate({ id: task.id })}>Delete</Button
+              >
+            </div>
           </div>
 
-          <!-- Comment Input -->
           <div>
-            <!-- TODO: Add user avatar? -->
             <Textarea
               placeholder="Leave a comment..."
               class="bg-background/50 text-foreground border-border/50 focus:border-primary resize-none"
             />
-            <div class="mt-2 flex justify-end">
-              <Button size="sm">Comment</Button>
-              <!-- TODO: Add submit functionality -->
-            </div>
           </div>
 
-          <!-- Placeholder for Activity Feed -->
           <div class="text-muted-foreground border-border/50 border-t pt-4 text-sm">
-            <!-- Example activity item -->
             <div class="flex items-center gap-2">
-              <!-- TODO: User avatar -->
-              <span class="text-foreground font-medium">gialynguyen</span>
+              <span class="text-foreground font-medium">
+                <!-- TODO: Implement user display -->
+                gialynguyen
+              </span>
               <span>created the issue</span>
               <span class="text-xs">• {formatTimeAgo(new Date(task.createdAt))}</span>
             </div>
-            <!-- More activity items would go here -->
           </div>
         </div>
       </div>
-    {:else}
-      <p class="text-muted-foreground text-center">Task not found.</p>
     {/if}
   </div>
 {:else}

@@ -1,6 +1,8 @@
 <script lang="ts" module>
+  import { CopyButton } from '$lib/components/copy-button';
   import { Button } from '$lib/components/ui/button';
   import { Calendar } from '$lib/components/ui/calendar';
+
   import * as Form from '$lib/components/ui/form';
   import { Input } from '$lib/components/ui/input';
   import * as Popover from '$lib/components/ui/popover';
@@ -8,21 +10,24 @@
   import { DateFormatter, getLocalTimeZone, now } from '@internationalized/date';
   import type { Snippet } from 'svelte';
   import type { SuperForm } from 'sveltekit-superforms';
-  import { type SubTaskForm } from './sub-task-manager.svelte';
 
-  export type Props = {
-    form: SuperForm<{
-      title: string;
-      description: string;
-      dueDate?: string;
-    }>;
+  export type TaskManagerFormData = {
+    title: string;
+    description?: string | undefined;
+    dueDate?: string;
+    shortId?: string;
+  };
+
+  export interface Props {
+    form: SuperForm<TaskManagerFormData>;
+    taskURL?: string;
     subTask?: Snippet;
     buttons?: Snippet;
-  };
+  }
 </script>
 
 <script lang="ts">
-  const { form, subTask, buttons }: Props = $props();
+  const { form, subTask, buttons, taskURL }: Props = $props();
   const { form: formData, enhance } = form;
 
   let dueDateDisplayFormatter = new DateFormatter('en-US', {
@@ -30,9 +35,6 @@
     day: 'numeric',
     year: 'numeric'
   });
-
-  // State for managing sub-tasks
-  let subTasks = $state<SubTaskForm[]>([]);
 </script>
 
 <form method="post" use:enhance>
@@ -42,16 +44,25 @@
         {#snippet children({ props })}
           <Input
             {...props}
-            class="border-none text-base font-medium"
+            class="border-none text-2xl font-bold md:text-2xl"
             placeholder="Task title"
             bind:value={$formData.title}
           />
-          <Form.FieldErrors />
+          <Form.FieldErrors class="mb-3" />
         {/snippet}
       </Form.Control>
     </Form.Field>
 
-    <Form.Field {form} name="description">
+    {#if $formData.shortId}
+      <div class="text-muted-foreground mb-2 ml-3 flex items-center text-sm">
+        <span class="bg-muted rounded px-1 py-0.5 font-mono">{$formData.shortId}</span>
+        {#if taskURL}
+          <CopyButton class="ml-0.5" value={taskURL} />
+        {/if}
+      </div>
+    {/if}
+
+    <Form.Field {form} name="description" class="mt-4">
       <Form.Control>
         {#snippet children({ props })}
           <Textarea
@@ -65,7 +76,7 @@
       </Form.Control>
     </Form.Field>
 
-    <Form.Field {form} name="dueDate" class="inline-flex">
+    <Form.Field {form} name="dueDate" class="ml-3 inline-flex">
       <Form.Control>
         <Popover.Root>
           <Popover.Trigger>

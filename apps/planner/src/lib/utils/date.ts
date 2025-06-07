@@ -51,35 +51,35 @@ export function formatTimeAgo(date: Date): string {
   }
 
   if (diffInDays === 1) {
-    return '(1) day ago';
+    return '1 day ago';
   }
 
   if (diffInDays < 7) {
-    return `(${diffInDays}) days ago`;
+    return `${diffInDays} days ago`;
   }
 
   const diffInWeeks = Math.floor(diffInDays / 7);
   if (diffInWeeks === 1) {
-    return '(1) week ago';
+    return '1 week ago';
   }
 
   if (diffInWeeks < 4) {
-    return `(${diffInWeeks}) weeks ago`;
+    return `${diffInWeeks} weeks ago`;
   }
 
   const diffInMonths = Math.floor(diffInDays / 30);
   if (diffInMonths === 1) {
-    return '(1) month ago';
+    return '1 month ago';
   }
 
   if (diffInMonths < 12) {
-    return `(${diffInMonths}) months ago`;
+    return `${diffInMonths} months ago`;
   }
 
   const diffInYears = Math.floor(diffInDays / 365);
   if (diffInYears === 1) {
-    return '(1) year ago';
+    return '1 year ago';
   }
 
-  return `(${diffInYears}) years ago`;
+  return `${diffInYears} years ago`;
 }

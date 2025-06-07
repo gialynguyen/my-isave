@@ -1,31 +1,95 @@
-<script lang="ts">
-  import { Input } from '$lib/components/ui/input';
-  import { Button } from '$lib/components/ui/button';
-  import { Textarea } from '$lib/components/ui/textarea';
-  import * as Popover from '$lib/components/ui/popover';
-  import { Calendar } from '$lib/components/ui/calendar';
-  import { DateFormatter, getLocalTimeZone, now } from '@internationalized/date';
+<script lang="ts" module>
   import { Badge } from '$lib/components/ui/badge';
+  import { Button } from '$lib/components/ui/button';
+  import { Calendar } from '$lib/components/ui/calendar';
+  import { Input } from '$lib/components/ui/input';
+  import * as Popover from '$lib/components/ui/popover';
+  import { Textarea } from '$lib/components/ui/textarea';
+  import { cn } from '$lib/utils';
+  import { DateFormatter, getLocalTimeZone, now } from '@internationalized/date';
   import { Pencil, X } from 'lucide-svelte';
+  import type { Readable } from 'svelte/store';
+  import { derived, get, writable } from 'svelte/store';
 
-  export type SubTaskForm = {
+  export type SubTask = {
+    id?: string;
     title: string;
-    description: string;
+    description?: string;
     dueDate?: string;
   };
 
   export type Props = {
-    subTasks: SubTaskForm[];
-    onAddSubTask: (subTask: SubTaskForm) => void;
-    onUpdateSubTask: (index: number, subTask: SubTaskForm) => void;
+    subTasks: Readable<SubTask[]>;
+    onAddSubTask: (subTask: SubTask) => void;
+    onUpdateSubTask: (index: number, subTask: SubTask) => void;
     onRemoveSubTask: (index: number) => void;
+    class?: string;
   };
 
+  export function useSubTaskManager(initTasks?: SubTask[]) {
+    const subTasks = writable<SubTask[]>(initTasks || []);
+    const eventListeners = new Map<'added' | 'updated' | 'removed', Array<(task: SubTask) => void>>(
+      new Map([
+        ['added', []],
+        ['updated', []],
+        ['removed', []]
+      ])
+    );
+
+    const readonlySubTasks = derived(subTasks, ($subTasks) => $subTasks);
+
+    function addSubTask(subTask: SubTask) {
+      subTasks.update((tasks) => [...tasks, subTask]);
+      dispatch('added', subTask);
+    }
+
+    function updateSubTask(index: number, subTask: SubTask) {
+      subTasks.update((tasks) => tasks.map((task, i) => (i === index ? subTask : task)));
+      dispatch('updated', subTask);
+    }
+
+    function removeSubTask(index: number) {
+      const removedTask = get(subTasks)[index];
+      subTasks.update((tasks) => tasks.filter((_, i) => i !== index));
+      dispatch('removed', removedTask);
+    }
+
+    function clearSubTasks() {
+      subTasks.set([]);
+    }
+
+    function on(event: 'added' | 'updated' | 'removed', callback: (task: SubTask) => void) {
+      const listeners = eventListeners.get(event);
+      if (listeners) {
+        listeners.push(callback);
+      }
+    }
+
+    function dispatch(event: 'added' | 'updated' | 'removed', task: SubTask) {
+      const listeners = eventListeners.get(event);
+      if (listeners) {
+        listeners.forEach((callback) => callback(task));
+      }
+    }
+
+    return {
+      subTasks: readonlySubTasks,
+      addSubTask,
+      updateSubTask,
+      removeSubTask,
+      clearSubTasks,
+      onSubtaskEvent: on
+    };
+  }
+</script>
+
+<script lang="ts">
   let {
-    subTasks = $bindable([]),
+    subTasks,
     onAddSubTask,
     onUpdateSubTask,
-    onRemoveSubTask
+    onRemoveSubTask,
+    class: className
   }: Props = $props();
 
   // UI state for the component
@@ -88,9 +152,9 @@
   }
 
   function startEditSubTask(index: number) {
-    const subTask = subTasks[index];
+    const subTask = get(subTasks)[index];
     newTitle = subTask.title;
-    newDescription = subTask.description;
+    newDescription = subTask.description || '';
     newDueDate = subTask.dueDate;
     editingIndex = index;
     viewMode = 'edit';
@@ -108,16 +172,16 @@
   }
 </script>
 
-<div class="mt-2 space-y-3 rounded-lg border px-4 pt-3 pb-2">
-  <h4 class="text-sm font-medium">
+<div class={cn('mt-2 space-y-3 rounded-lg border px-4 pt-3 pb-2', className)}>
+  <h4 class="mb-3 text-sm font-medium">
     {#if isCreateMode()}
       Create Sub-task
     {:else if isEditMode()}
       Edit Sub-task
     {:else}
       Sub-tasks
-      {#if subTasks.length > 0}
-        <Badge variant="secondary" class="ml-1">{subTasks.length}</Badge>
+      {#if $subTasks.length > 0}
+        <Badge variant="secondary" class="ml-1">{$subTasks.length}</Badge>
       {/if}
     {/if}
   </h4>
@@ -170,9 +234,9 @@
     </div>
   {:else}
     <!-- Sub-tasks list -->
-    {#if subTasks.length > 0}
+    {#if $subTasks.length > 0}
       <div class="border-muted space-y-2 border-l-2 pl-4">
-        {#each subTasks as subTask, index}
+        {#each $subTasks as subTask, index}
           <div class="bg-muted/30 flex flex-col rounded-md p-2">
             <div class="flex items-center justify-between">
               <span class="text-sm font-medium">{subTask.title}</span>

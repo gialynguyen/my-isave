@@ -2,8 +2,14 @@ import { today } from '@internationalized/date';
 import { createTaskPayloadDto } from 'features/task/dtos/create-task';
 import { queryTasksConditionsDto } from 'features/task/dtos/query-tasks';
 import { updateTaskPayloadDto } from 'features/task/dtos/update-task';
-import { createTask, getTaskByShortId, queryTasks, updateTask } from 'features/task/services';
 import { TaskEntity } from 'features/task/entity';
+import {
+  createTask,
+  deleteTemporarilyTask,
+  getTaskByShortId,
+  queryTasks,
+  updateTask
+} from 'features/task/services';
 import { Hono } from 'hono';
 import { describeRoute } from 'hono-openapi';
 import { validator } from 'server/middlewares/validator';
@@ -18,9 +24,17 @@ const taskRoutes = new Hono()
     }),
     validator('query', queryTasksConditionsDto),
     async (c) => {
-      const { dueDate, timezone, page, limit, before, last, after, first, parentTaskId } = c.req.valid('query');
+      const { dueDate, timezone, page, limit, before, last, after, first, parentTask } =
+        c.req.valid('query');
 
-      const query: Parameters<typeof queryTasks>[0] = {};
+      const query: Parameters<typeof queryTasks>[0] = {
+        isCompleted: false,
+        subTasks: {
+          isDeleted: false,
+          isArchived: false
+        }
+      };
+
       const pagination: Parameters<typeof queryTasks>[1] = {
         page: page ? Number(page) : undefined,
         limit: limit ? Number(limit) : undefined,
@@ -61,8 +75,8 @@ const taskRoutes = new Hono()
       }
 
       // Handle parent task filtering
-      if (parentTaskId !== undefined) {
-        query.parentTaskId = parentTaskId === 'null' ? null : parentTaskId;
+      if (parentTask !== undefined) {
+        query.parentTask = parentTask === 'null' ? null : parentTask;
       }
 
       const tasks = await queryTasks(query, pagination);
@@ -84,7 +98,7 @@ const taskRoutes = new Hono()
       return c.json(task);
     }
   )
-  .put(
+  .patch(
     '/:id',
     describeRoute({
       summary: 'Update a task',
@@ -109,7 +123,7 @@ const taskRoutes = new Hono()
       const { id } = c.req.param();
       const em = getPostgresEm();
       const task = await em.findOneOrFail(TaskEntity, { id }, { populate: ['subTasks'] });
-      
+
       return c.json(task);
     }
   )
@@ -121,11 +135,7 @@ const taskRoutes = new Hono()
     }),
     async (c) => {
       const { id } = c.req.param();
-      const em = getPostgresEm();
-      const task = await em.findOneOrFail(TaskEntity, { id });
-      
-      await em.removeAndFlush(task);
-      
+      await deleteTemporarilyTask(id);
       return c.json({ success: true });
     }
   )
@@ -138,7 +148,6 @@ const taskRoutes = new Hono()
     async (c) => {
       const { shortId } = c.req.param();
       const task = await getTaskByShortId(shortId);
-      
       return c.json(task);
     }
   );

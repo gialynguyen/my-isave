@@ -8,4 +8,4 @@ export const updateTaskPayloadDto = Type.Composite([
   })
 ]);
 
-export type UpdateTaskDto = Static<typeof updateTaskPayloadDto>;
+export type UpdateTaskPayloadDto = Static<typeof updateTaskPayloadDto>;
