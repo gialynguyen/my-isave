@@ -6,7 +6,7 @@ import { validator } from 'server/middlewares/validator';
 const reminderRoutes = new Hono().post(
   '/',
   validator('json', createReminderPayloadDto),
-  async (c) => {
+  async function handler (c) {
     const payload = c.req.valid('json');
     const reminder = await createReminder(payload);
     return c.json(reminder);

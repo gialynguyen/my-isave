@@ -72,7 +72,6 @@
   let groupedTasks = $derived.by(() => {
     if (!$allTasks.data) return { overdue: [], today: [], ongoing: [] };
 
-    // Filter out completed tasks and then group the remaining ones
     const incompleteTasks = $allTasks.data.filter((task) => !task.isCompleted);
 
     return groupBy((task: (typeof incompleteTasks)[number]) => {

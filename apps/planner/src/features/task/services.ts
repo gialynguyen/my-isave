@@ -1,7 +1,7 @@
 import { serialize, wrap, type FilterObject } from '@mikro-orm/core';
 import { getPostgresEm } from 'server/providers/postgres';
 import type { CreateTaskPayload } from './dtos/create-task';
-import type { TaskDefaultOutput } from './dtos/task-ouput';
+import type { TaskDefaultOutput } from './dtos/task-output';
 import type { UpdateTaskPayloadDto } from './dtos/update-task';
 import { TaskEntity } from './entity';
 import { taskPostgresRepo } from './repository';

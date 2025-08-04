@@ -28,11 +28,7 @@ const taskRoutes = new Hono()
         c.req.valid('query');
 
       const query: Parameters<typeof queryTasks>[0] = {
-        isCompleted: false,
-        subTasks: {
-          isDeleted: false,
-          isArchived: false
-        }
+        isCompleted: false
       };
 
       const pagination: Parameters<typeof queryTasks>[1] = {

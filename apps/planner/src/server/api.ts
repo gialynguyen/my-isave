@@ -1,5 +1,5 @@
 import { RequestContext } from '@mikro-orm/core';
-import { apiReference } from '@scalar/hono-api-reference';
+import { Scalar } from '@scalar/hono-api-reference';
 import { Hono } from 'hono';
 import { openAPISpecs } from 'hono-openapi';
 import { createMiddleware } from 'hono/factory';
@@ -54,7 +54,7 @@ const routes = app
   )
   .get(
     '/docs',
-    apiReference({
+    Scalar({
       // @ts-ignore
       spec: { url: '/api/openapi.json' }
     })
