@@ -1,0 +1,9 @@
+$schema: 'https://moonrepo.dev/schemas/project.json'
+id: 'english-guide'
+language: 'typescript'
+stack: 'frontend'
+type: 'application'
+tags:
+  - 'vite'
+  - 'svelte'
+  - 'ai'

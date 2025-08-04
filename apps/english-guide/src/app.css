@@ -1,0 +1,129 @@
+@import 'tailwindcss';
+@config "../tailwind.config.js";
+
+@layer base {
+  :root {
+    --background: 220 13% 98%;
+    --background-subtle: 220 13% 96%;
+    --background-emphasis: 220 13% 93%;
+
+    --foreground: 220 13% 10%;
+    --foreground-subtle: 220 13% 35%;
+    --foreground-muted: 220 13% 55%;
+
+    --border: 220 13% 90%;
+    --border-subtle: 220 13% 94%;
+
+    --primary: 245 100% 60%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 13% 90%;
+    --secondary-foreground: 220 13% 10%;
+
+    --accent: 140 80% 55%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 358 75% 59%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 140 80% 55%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 95% 64%;
+    --warning-foreground: 0 0% 15%;
+
+    --info: 220 90% 60%;
+    --info-foreground: 0 0% 100%;
+
+    --card: 220 13% 98%;
+    --card-foreground: 220 13% 10%;
+
+    --popover: 220 13% 100%;
+    --popover-foreground: 220 13% 10%;
+
+    --muted: 220 13% 96%;
+    --muted-foreground: 220 13% 45%;
+
+    --input: 220 13% 96%;
+    --input-foreground: 220 13% 10%;
+    --input-placeholder: 220 13% 55%;
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 220 13% 10%;
+    --background-subtle: 220 13% 12%;
+    --background-emphasis: 220 13% 18%;
+
+    --foreground: 220 13% 95%;
+    --foreground-subtle: 220 13% 65%;
+    --foreground-muted: 220 13% 45%;
+
+    --border: 220 13% 20%;
+    --border-subtle: 220 13% 16%;
+
+    --primary: 245 100% 60%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 13% 23%;
+    --secondary-foreground: 220 13% 95%;
+
+    --accent: 140 80% 55%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 358 75% 59%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 140 80% 55%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 95% 64%;
+    --warning-foreground: 0 0% 15%;
+
+    --info: 220 90% 60%;
+    --info-foreground: 0 0% 100%;
+
+    --card: 220 13% 15%;
+    --card-foreground: 220 13% 95%;
+
+    --popover: 220 13% 16%;
+    --popover-foreground: 220 13% 95%;
+
+    --muted: 220 13% 16%;
+    --muted-foreground: 220 13% 55%;
+
+    --input: 220 13% 16%;
+    --input-foreground: 220 13% 95%;
+    --input-placeholder: 220 13% 45%;
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
